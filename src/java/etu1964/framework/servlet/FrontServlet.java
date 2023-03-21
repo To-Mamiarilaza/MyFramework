@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -48,10 +49,11 @@ public class FrontServlet extends HttpServlet {
 
 /// Constructeur
     @Override
-    public void init() throws ServletException {
-        super.init(); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
         try {
-            loadMappingUrls();  // Remplisse le mappingUrls
+            String rootPackage = config.getInitParameter("rootPackage");
+            loadMappingUrls(rootPackage);  // Remplisse le mappingUrls
             detailMappingUrls();
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,9 +84,9 @@ public class FrontServlet extends HttpServlet {
     }
     
     // Chargement du mappingUrls
-    public void loadMappingUrls() throws Exception {
+    public void loadMappingUrls(String rootPackage) throws Exception {
         System.out.println("Commencement Analyse");
-        List<Class> classes = FrameworkUtility.getClassesIn("etu1964.model");
+        List<Class> classes = FrameworkUtility.getClassesIn(rootPackage);
         for (Class classe : classes) {
             scanClass(classe); 
         }

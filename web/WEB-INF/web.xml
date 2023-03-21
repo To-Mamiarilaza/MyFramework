@@ -3,6 +3,10 @@
     <servlet>
         <servlet-name>FrontServlet</servlet-name>
         <servlet-class>etu1964.framework.servlet.FrontServlet</servlet-class>
+        <init-param>
+            <param-name>rootPackage</param-name>
+            <param-value>etu1964.model</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>FrontServlet</servlet-name>
