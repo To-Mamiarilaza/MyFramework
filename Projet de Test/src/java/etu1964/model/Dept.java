@@ -4,14 +4,13 @@
  */
 package etu1964.model;
 
-import etu1964.framework.annotations.Url;
 import java.util.List;
 
 /**
  *
  * @author to
  */
-public class Emp {
+public class Dept {
 /// Attributs
 
     String nom;
@@ -29,20 +28,21 @@ public class Emp {
     }
 
 /// Constructeur
-    public Emp(String nom) throws Exception {
+    public Dept(String nom) throws Exception {
         setNom(nom);
     }
 
 /// Fonctions du classe
-    
-    @Url(path="getAllEmployee")
-    public List getAll() {
-        System.out.println("Listes de tous les employées");
+    public List getAllDept() {
+        System.out.println("Listes de tous les département");
         return null;
     }
 
-    @Url(path="insertEmp")
-    public void insertionEmp() {
-        System.out.println("Insertion nouveau Emp");
+    public void insertionDept() {
+        System.out.println("Insertion nouveau département");
+    }
+    
+    public void refresh() {
+        System.out.println("Rafraichissement du dept");
     }
 }
