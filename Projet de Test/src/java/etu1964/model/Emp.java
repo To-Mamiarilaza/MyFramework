@@ -4,6 +4,8 @@
  */
 package etu1964.model;
 
+import etu1964.framework.ModelView;
+import etu1964.framework.annotations.Url;
 import java.util.List;
 
 /**
@@ -31,14 +33,20 @@ public class Emp {
         setNom(nom);
     }
 
+    public Emp() {
+    }
+    
 /// Fonctions du classe
     
+    @Url(path="getAllEmployer")
     public List getAll() {
         System.out.println("Listes de tous les employées");
         return null;
     }
 
-    public void insertionEmp() {
+    @Url(path="insertNewEmp")
+    public ModelView insertionEmp() {
         System.out.println("Insertion nouveau Emp");
+        return new ModelView("insertionEmploye.jsp");
     }
 }

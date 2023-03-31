@@ -4,6 +4,8 @@
  */
 package etu1964.model;
 
+import etu1964.framework.ModelView;
+import etu1964.framework.annotations.Url;
 import java.util.List;
 
 /**
@@ -31,18 +33,27 @@ public class Dept {
     public Dept(String nom) throws Exception {
         setNom(nom);
     }
+    
+    public Dept() {
+        
+    }
 
 /// Fonctions du classe
+    @Url(path="getAllDepartement")
     public List getAllDept() {
         System.out.println("Listes de tous les département");
         return null;
     }
+    
+    @Url(path="welcome")
+    public ModelView departement() {
+        return new ModelView("departement.jsp");
+    }
 
+    @Url(path="insertNewDept")
     public void insertionDept() {
-        System.out.println("Insertion nouveau département");
     }
     
     public void refresh() {
-        System.out.println("Rafraichissement du dept");
     }
 }

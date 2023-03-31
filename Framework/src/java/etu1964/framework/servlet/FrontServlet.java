@@ -5,20 +5,24 @@
 package etu1964.framework.servlet;
 
 import etu1964.framework.Mapping;
+import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FrameworkUtility;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Response;
 
 /**
  *
@@ -37,12 +41,12 @@ public class FrontServlet extends HttpServlet {
      */
 /// Attributs MappingUrls
     HashMap<String, Mapping> mappingUrls = new HashMap<>();
-    
+
 /// Encapsulations
     public HashMap getMappingUrls() {
         return this.mappingUrls;
     }
-    
+
     public void addInMappingUrls(String url, Mapping mapping) {
         mappingUrls.put(url, mapping);
     }
@@ -61,7 +65,6 @@ public class FrontServlet extends HttpServlet {
     }
 
 /// Fonctions du classe
-    
     // Detail des elements du Mapping Url
     public void detailMappingUrls() {
         Set<Map.Entry<String, Mapping>> entries = getMappingUrls().entrySet();
@@ -69,7 +72,7 @@ public class FrontServlet extends HttpServlet {
             System.out.println("Url : " + entry.getKey() + " ClassName : " + entry.getValue().getClassName() + " Method : " + entry.getValue().getMethod());
         }
     }
-    
+
     // Trouve les fonction et leur mapping dans un class
     public void scanClass(Class target) {
         Method[] methods = target.getDeclaredMethods();
@@ -82,30 +85,71 @@ public class FrontServlet extends HttpServlet {
             }
         }
     }
-    
+
     // Chargement du mappingUrls
     public void loadMappingUrls(String rootPackage) throws Exception {
-        System.out.println("Commencement Analyse");
         List<Class> classes = FrameworkUtility.getClassesIn(rootPackage);
         for (Class classe : classes) {
-            scanClass(classe); 
+            scanClass(classe);
+        }
+    }
+
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            String functionUrl = getFunctionUrl(request.getRequestURI(), request.getContextPath());
+            Object result = callFunction(functionUrl);
+            if (result instanceof ModelView) {
+                ModelView model = (ModelView) result;
+                RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
+                dispat.forward(request, response);
+            }
+            else {
+                affichageFonction(response);
+            }
+        } catch (Exception e) {
+            affichageErreur(response, e);
         }
     }
     
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    // Prendre le nom du fonction a appeler
+    protected String getFunctionUrl(String URI, String contextePath) {
+        return URI.substring(contextePath.length(), URI.length());
+    }
+    
+    // Texte a afficher si on appelle fonction sans chargement modelView
+    protected void affichageFonction(HttpServletResponse response) {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
+        try (PrintWriter out = response.getWriter()) { 
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
             out.println("<title>Servlet FrontServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>URL Entrer : " + getURL(request) + "</h1>");
+            out.println("<p> Fonction appelée</p>");
             out.println("</body>");
             out.println("</html>");
+        }  catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // Texte a afficher si on appelle fonction sans chargement modelView
+    protected void affichageErreur(HttpServletResponse response, Exception ex) {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) { 
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet FrontServlet</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<p>" + ex.getMessage() + "</p>");
+            out.println("</body>");
+            out.println("</html>");
+        }  catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -116,6 +160,31 @@ public class FrontServlet extends HttpServlet {
             url = url + "?" + request.getQueryString();
         }
         return url;
+    }
+    
+    // Appele la fonction concerné avec l'URL
+    protected Object callFunction(String url) throws Exception {
+        Mapping map = getMapping(url);
+        Class classInstance = Class.forName(map.getClassName());
+        Object objet = classInstance.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
+        Method function = classInstance.getDeclaredMethod(map.getMethod(), new Class[0]);
+        Object result = function.invoke(objet, new Object[0]);
+        return result;
+    }
+    
+    public Mapping getMapping(String url) throws Exception {
+        if(url == null) {
+            url = "";
+        }
+        else {
+            url = url.substring(1, url.length());
+        }
+        
+        Mapping map = (Mapping) getMappingUrls().get(url);
+        if (map == null) {
+            throw new Exception("L'url " + url + " que vous avez entrer n'existe pas dans le projet.");
+        }
+        return map;
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
