@@ -6,6 +6,8 @@ package etu1964.model;
 
 import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Url;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,6 +16,7 @@ import java.util.List;
  */
 public class Emp {
 /// Attributs
+
     String nom;
 
 /// Encapsulation
@@ -21,32 +24,42 @@ public class Emp {
         return nom;
     }
 
-    public void setNom(String nom) throws Exception {
-        if (nom.equals("") || nom == null) {
-            throw new Exception("Le nom ne doit pas etre null");
-        }
+    public void setNom(String nom) {
         this.nom = nom;
     }
 
 /// Constructeur
-    public Emp(String nom) throws Exception {
+    public Emp(String nom) {
         setNom(nom);
     }
 
     public Emp() {
     }
-    
+
 /// Fonctions du classe
-    
-    @Url(path="getAllEmployer")
-    public List getAll() {
-        System.out.println("Listes de tous les employées");
-        return null;
+    @Url(path = "getAllEmployer")
+    public ModelView getAll() {
+        // Les données à envoyer
+        List<Emp> listes = new ArrayList<Emp>();
+        listes.add(new Emp("To"));
+        listes.add(new Emp("Niavo"));
+        listes.add(new Emp("Tsanta"));
+        listes.add(new Emp("Naina"));
+
+
+        String dateDebut = "2023 - 04 - 07";
+        
+        ModelView view = new ModelView("ListeEmployer.jsp");
+        view.addItem("listes", listes);
+        view.addItem("dateDebut", dateDebut);
+
+        return view;
     }
 
-    @Url(path="insertNewEmp")
+    @Url(path = "insertNewEmp")
     public ModelView insertionEmp() {
-        System.out.println("Insertion nouveau Emp");
-        return new ModelView("insertionEmploye.jsp");
+        ModelView view = new ModelView("insertionEmploye.jsp");
+        view.addItem("nom", "Rabe");
+        return view;
     }
 }

@@ -12,6 +12,6 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <p>Employer inserer</p>
+        <p>Employer <%= request.getAttribute("nom") %> inserer</p>
     </body>
 </html>
