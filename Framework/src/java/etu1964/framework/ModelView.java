@@ -4,6 +4,8 @@
  */
 package etu1964.framework;
 
+import java.util.HashMap;
+
 /**
  *
  * @author to
@@ -11,7 +13,8 @@ package etu1964.framework;
 public class ModelView {
 /// Attributs
     String view;
-
+    HashMap<String, Object> data = new HashMap<String, Object>();
+    
 /// Constructeur
     public ModelView(String view) {
         this.view = view;
@@ -24,5 +27,14 @@ public class ModelView {
 
     public void setView(String view) {
         this.view = view;
+    }
+    
+    public HashMap<String, Object> getData() {
+        return this.data;
+    }
+    
+/// Fonctions du classe
+    public void addItem(String cle, Object valeur) {
+        getData().put(cle, valeur);
     }
 }

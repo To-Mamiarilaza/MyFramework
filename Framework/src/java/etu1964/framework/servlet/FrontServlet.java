@@ -10,7 +10,6 @@ import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FrameworkUtility;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.Response;
 
 /**
  *
@@ -93,6 +91,16 @@ public class FrontServlet extends HttpServlet {
             scanClass(classe);
         }
     }
+    
+    // Depaquetage des données à envoyer vers le view
+    protected void prepareRequest(HttpServletRequest request, ModelView view) {
+        HashMap<String, Object> data = view.getData();
+        Set<Map.Entry<String, Object>> elements = data.entrySet();
+        for (Map.Entry<String, Object> element : elements) {
+            System.out.println("Ajout a l'attribut : " + element.getKey() + " " + element.getValue());
+            request.setAttribute(element.getKey(), element.getValue());
+        }
+    }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -101,6 +109,8 @@ public class FrontServlet extends HttpServlet {
             Object result = callFunction(functionUrl);
             if (result instanceof ModelView) {
                 ModelView model = (ModelView) result;
+                prepareRequest(request, model);
+                
                 RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
                 dispat.forward(request, response);
             }
