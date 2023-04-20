@@ -8,6 +8,7 @@ import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Url;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,6 +19,8 @@ public class Emp {
 /// Attributs
 
     String nom;
+    int age;
+    Date naissance;
 
 /// Encapsulation
     public String getNom() {
@@ -26,6 +29,22 @@ public class Emp {
 
     public void setNom(String nom) {
         this.nom = nom;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public Date getNaissance() {
+        return naissance;
+    }
+
+    public void setNaissance(Date naissance) {
+        this.naissance = naissance;
     }
 
 /// Constructeur
@@ -46,9 +65,8 @@ public class Emp {
         listes.add(new Emp("Tsanta"));
         listes.add(new Emp("Naina"));
 
-
         String dateDebut = "2023 - 04 - 07";
-        
+
         ModelView view = new ModelView("ListeEmployer.jsp");
         view.addItem("listes", listes);
         view.addItem("dateDebut", dateDebut);
@@ -57,9 +75,11 @@ public class Emp {
     }
 
     @Url(path = "insertNewEmp")
-    public ModelView insertionEmp() {
-        ModelView view = new ModelView("insertionEmploye.jsp");
-        view.addItem("nom", "Rabe");
-        return view;
+    public void save() {
+        System.out.println("J'insert un nouveau employee ");
+        System.out.println("Son nom est : " + this.getNom());
+        System.out.println("Son age est : " + this.getAge());
+        System.out.println("Née en : " + this.getNaissance());
+
     }
 }
