@@ -10,6 +10,7 @@ import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FrameworkUtility;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +98,6 @@ public class FrontServlet extends HttpServlet {
         HashMap<String, Object> data = view.getData();
         Set<Map.Entry<String, Object>> elements = data.entrySet();
         for (Map.Entry<String, Object> element : elements) {
-            System.out.println("Ajout a l'attribut : " + element.getKey() + " " + element.getValue());
             request.setAttribute(element.getKey(), element.getValue());
         }
     }
@@ -106,7 +106,7 @@ public class FrontServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String functionUrl = getFunctionUrl(request.getRequestURI(), request.getContextPath());
-            Object result = callFunction(functionUrl);
+            Object result = callFunction(functionUrl, request);
             if (result instanceof ModelView) {
                 ModelView model = (ModelView) result;
                 prepareRequest(request, model);
@@ -172,11 +172,27 @@ public class FrontServlet extends HttpServlet {
         return url;
     }
     
+    // Remplisse les attributs de l'objet si des donnees provenant d'un formulaire existe
+    // Valable pour attribut de meme nom et un seule valeur non un tableau
+    protected void loadObjectAttribute(Object objet, HttpServletRequest request) throws Exception {
+        Map<String, String[]> parameters = request.getParameterMap();
+        Field[] attributs = objet.getClass().getDeclaredFields();
+        
+        for(String parameter : parameters.keySet()) {
+            for(Field attr : attributs) {
+                if (parameter.equals(attr.getName())) {
+                    FrameworkUtility.affectAttribute(objet, attr, parameters.get(parameter)[0]);
+                }
+            }
+        }
+    }
+    
     // Appele la fonction concerné avec l'URL
-    protected Object callFunction(String url) throws Exception {
+    protected Object callFunction(String url, HttpServletRequest request) throws Exception {
         Mapping map = getMapping(url);
         Class classInstance = Class.forName(map.getClassName());
         Object objet = classInstance.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
+        loadObjectAttribute(objet, request);
         Method function = classInstance.getDeclaredMethod(map.getMethod(), new Class[0]);
         Object result = function.invoke(objet, new Object[0]);
         return result;

@@ -15,13 +15,18 @@
     </head>
     <body>
         <h1>Listes de tous les employers</h1>
-        <p>Date debut : <%=(String) request.getAttribute("dateDebut") %></p>
+        <p>Date debut : <%=(String) request.getAttribute("dateDebut")%></p>
         <% List<Emp> listes = (List) request.getAttribute("listes"); %>
         <ul>
-            <% for (Emp elem : listes) { %>
-                <li><%= elem.getNom() %></li>
-            <% } %>
+            <% for (Emp elem : listes) {%>
+            <li><%= elem.getNom()%></li>
+                <% }%>
         </ul>
+        <form action="insertNewEmp" method="POST">
+            <input type="text" name="nom" value="Koto">
+            <input type="number" name="age" value="18">
+            <input type="date" name="naissance" value="2004-07-07">
+            <input type="submit" value="tester">
+        </form>
     </body>
 </html>
- 
