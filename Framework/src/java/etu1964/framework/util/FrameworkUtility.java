@@ -7,11 +7,15 @@ package etu1964.framework.util;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -36,22 +40,69 @@ public class FrameworkUtility {
         // Appel du setter et cast value
         Object parametre = null;
         Class typeEntrer = method.getParameterTypes()[0];
-        if (typeEntrer == int.class || typeEntrer == Integer.class) {
-            parametre = Integer.valueOf(value);
-        } 
-        else if (typeEntrer == double.class || typeEntrer == Double.class) {
-            parametre = Double.valueOf(value);
-        } 
-        else if (typeEntrer == Date.class || typeEntrer == Double.class) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            parametre = formatter.parse(value);
-        }
-        else {
-            parametre = value;
-        }
+        parametre = FrameworkUtility.castValue(typeEntrer, value);
         
         method.invoke(objet, parametre);
     }
+    
+    public static Object castValue(Class typeEntrer, String value) throws Exception {
+        if (typeEntrer == Integer.class) {
+            return Integer.valueOf(value);
+        }
+        else if (typeEntrer == int.class) {
+            return Integer.valueOf(value);
+        }
+        else if (typeEntrer == Double.class) {
+            return Double.valueOf(value);
+        } 
+        else if (typeEntrer == double.class) {
+            return Double.valueOf(value);
+        } 
+        else if (typeEntrer == Date.class || typeEntrer == Double.class) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            return formatter.parse(value);
+        }
+        else {
+            return value;
+        }
+    }
+    
+    // Trouve un method à partir de son nom
+    public static Method findMethod(String nomFonction, Object objet) {
+        Method[] methods = objet.getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.getName().equals(nomFonction)) {
+                return method;
+            }
+        }
+        return null;
+    }
+    
+    public static Object[] prepareFunctionParameter(Method function, HashMap<String, String> functionParameters) throws Exception {
+        Parameter[] params = function.getParameters();
+        Object[] arguments = new Object[params.length];     // Tableau contenant l'arguments
+        Set<Map.Entry<String, String>> elements = functionParameters.entrySet();
+        
+        int indice = 0;
+        for (Parameter param : params) {
+            boolean exist = false;
+            for (Map.Entry<String, String> element : elements) {
+                if (element.getKey().equals(param.getName())) {
+                    arguments[indice] = FrameworkUtility.castValue(param.getType(), element.getValue());
+                    exist = true;
+                    indice++;
+                }
+            }
+            
+            if (exist == false) {
+                arguments[indice] = null;
+                indice++;
+            }
+        }
+        return arguments;
+    }
+    
+    
     
     // Prends tous les .class a l'interieur des sous package
     public static void getSubClasses(String parentPackage, File dossier, List classes) throws Exception {

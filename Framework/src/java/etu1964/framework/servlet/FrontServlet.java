@@ -107,7 +107,7 @@ public class FrontServlet extends HttpServlet {
         try {
             String functionUrl = getFunctionUrl(request.getRequestURI(), request.getContextPath());
             Object result = callFunction(functionUrl, request);
-            if (result instanceof ModelView) {
+            if (result != null && result instanceof ModelView) {
                 ModelView model = (ModelView) result;
                 prepareRequest(request, model);
                 
@@ -120,6 +120,23 @@ public class FrontServlet extends HttpServlet {
         } catch (Exception e) {
             affichageErreur(response, e);
         }
+    }
+    
+    // Prendre les arguments passé par l'url
+    protected HashMap<String,String> getAllURLParameter(HttpServletRequest request) {
+        HashMap<String, String> parameters = new HashMap<>();
+        String queryString =  request.getQueryString();
+        if (queryString != null) {
+            String[] division = queryString.split("&");
+            for (String string : division) {
+                parameters.put(string.split("=")[0], string.split("=")[1]);
+            }
+            Set<Map.Entry<String, String>> elements = parameters.entrySet();
+            for (Map.Entry<String, String> element : elements) {
+                System.out.println("Name : " + element.getKey() + " --> " + element.getValue());
+            }
+        }
+        return parameters;
     }
     
     // Prendre le nom du fonction a appeler
@@ -172,6 +189,22 @@ public class FrontServlet extends HttpServlet {
         return url;
     }
     
+    // Pour remplir les attributes de l'objet à partir des parametres de l'URL
+    protected void loadURLAttribute(Object objet, HttpServletRequest request) throws Exception {
+        HashMap<String, String> parameters = getAllURLParameter(request);
+        Field[] attributs = objet.getClass().getDeclaredFields();
+        Set<Map.Entry<String, String>> elements = parameters.entrySet();
+        
+        for (Map.Entry<String, String> element : elements) {
+            for (Field attr : attributs) {
+                if (element.getKey().equals(attr.getName())) {
+                    FrameworkUtility.affectAttribute(objet, attr, element.getValue());
+                }
+            } 
+        }
+        
+    }
+    
     // Remplisse les attributs de l'objet si des donnees provenant d'un formulaire existe
     // Valable pour attribut de meme nom et un seule valeur non un tableau
     protected void loadObjectAttribute(Object objet, HttpServletRequest request) throws Exception {
@@ -192,9 +225,12 @@ public class FrontServlet extends HttpServlet {
         Mapping map = getMapping(url);
         Class classInstance = Class.forName(map.getClassName());
         Object objet = classInstance.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
-        loadObjectAttribute(objet, request);
-        Method function = classInstance.getDeclaredMethod(map.getMethod(), new Class[0]);
-        Object result = function.invoke(objet, new Object[0]);
+        loadURLAttribute(objet, request);       // Charge les attributs de classe par URL
+        loadObjectAttribute(objet, request);    // Charge les attributs de 
+        HashMap<String, String> parameters = getAllURLParameter(request);       // Les parametres en URL
+        Method function = FrameworkUtility.findMethod(map.getMethod(), objet);
+        Object[] parametres = FrameworkUtility.prepareFunctionParameter(function, parameters);      // Trouve les valeurs des arguments 
+        Object result = function.invoke(objet, parametres);
         return result;
     }
     
