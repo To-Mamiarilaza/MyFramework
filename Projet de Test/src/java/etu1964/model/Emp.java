@@ -75,11 +75,10 @@ public class Emp {
     }
 
     @Url(path = "insertNewEmp")
-    public void save() {
+    public void save(String name, Integer year, Date birth) {
         System.out.println("J'insert un nouveau employee ");
-        System.out.println("Son nom est : " + this.getNom());
-        System.out.println("Son age est : " + this.getAge());
-        System.out.println("Née en : " + this.getNaissance());
-
+        System.out.println("Son nom est : " + name);
+        System.out.println("Son age est : " + year);
+        System.out.println("Née en : " + birth);
     }
 }
