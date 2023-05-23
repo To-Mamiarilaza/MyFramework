@@ -56,7 +56,7 @@ public class Emp {
     }
 
 /// Fonctions du classe
-    @Url(path = "getAllEmployer")
+    @Url(path = "getAllEmployer.do")
     public ModelView getAll() {
         // Les données à envoyer
         List<Emp> listes = new ArrayList<Emp>();
@@ -74,7 +74,7 @@ public class Emp {
         return view;
     }
 
-    @Url(path = "insertNewEmp")
+    @Url(path = "insertNewEmp.do")
     public void save(String name, Integer year, Date birth) {
         System.out.println("J'insert un nouveau employee ");
         System.out.println("Son nom est : " + name);

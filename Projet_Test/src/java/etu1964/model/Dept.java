@@ -39,18 +39,18 @@ public class Dept {
     }
 
 /// Fonctions du classe
-    @Url(path="getAllDepartement")
+    @Url(path="getAllDepartement.do")
     public List getAllDept() {
         System.out.println("Listes de tous les département");
         return null;
     }
     
-    @Url(path="welcome")
+    @Url(path="welcome.do")
     public ModelView departement() {
         return new ModelView("departement.jsp");
     }
 
-    @Url(path="insertNewDept")
+    @Url(path="insertNewDept.do")
     public void insertionDept() {
     }
     
