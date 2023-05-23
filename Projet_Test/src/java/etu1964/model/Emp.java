@@ -6,7 +6,7 @@ package etu1964.model;
 
 import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Url;
-import java.lang.reflect.Array;
+import etu1964.framework.util.FileUpload;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,7 +21,8 @@ public class Emp {
     String nom;
     int age;
     Date naissance;
-
+    FileUpload photo;
+    
 /// Encapsulation
     public String getNom() {
         return nom;
@@ -45,6 +46,14 @@ public class Emp {
 
     public void setNaissance(Date naissance) {
         this.naissance = naissance;
+    }
+
+    public FileUpload getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(FileUpload photo) {
+        this.photo = photo;
     }
 
 /// Constructeur
@@ -77,8 +86,10 @@ public class Emp {
     @Url(path = "insertNewEmp.do")
     public void save(String name, Integer year, Date birth) {
         System.out.println("J'insert un nouveau employee ");
-        System.out.println("Son nom est : " + name);
-        System.out.println("Son age est : " + year);
-        System.out.println("Née en : " + birth);
+        System.out.println("Son nom est : " + this.nom);
+        System.out.println("Son age est : " + this.age);
+        System.out.println("Née en : " + this.naissance);
+        
+        System.out.println("Photo : " + getPhoto() + " et bytes : " + getPhoto().getBytes());
     }
 }

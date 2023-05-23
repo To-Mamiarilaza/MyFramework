@@ -34,6 +34,7 @@ UTILISATION DANS UN PROJET :
 4. Passer les données depuis le View par methode POST :
 	- Les données vont s'affecter vers l'attribut du class contenant la fonction 	
 	à executer si la clé et l'attribut ont le même nom sinon rien ne se passe
+	- Si le type de l'attribut est un tableau et l'input a un nom terminant par [] les valeurs s'affectent aussi
 	- On peut aussi les affecter par URL (?id=1&...)
 	- On peut les acceder par this.id par exemple
 
