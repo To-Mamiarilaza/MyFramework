@@ -7,11 +7,13 @@ package etu1964.framework.servlet;
 import etu1964.framework.Mapping;
 import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Url;
+import etu1964.framework.util.FileUpload;
 import etu1964.framework.util.FrameworkUtility;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,14 +21,18 @@ import java.util.Set;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
 /**
  *
  * @author to
  */
+@MultipartConfig
 public class FrontServlet extends HttpServlet {
 
     /**
@@ -92,7 +98,7 @@ public class FrontServlet extends HttpServlet {
             scanClass(classe);
         }
     }
-    
+
     // Depaquetage des données à envoyer vers le view
     protected void prepareRequest(HttpServletRequest request, ModelView view) {
         HashMap<String, Object> data = view.getData();
@@ -110,22 +116,22 @@ public class FrontServlet extends HttpServlet {
             if (result != null && result instanceof ModelView) {
                 ModelView model = (ModelView) result;
                 prepareRequest(request, model);
-                
+
                 RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
                 dispat.forward(request, response);
-            }
-            else {
+            } else {
                 affichageFonction(response);
             }
         } catch (Exception e) {
+            System.out.println("Une erreur s'est produite !");
             affichageErreur(response, e);
         }
     }
-    
+
     // Prendre les arguments passé par l'url
-    protected HashMap<String,String> getAllURLParameter(HttpServletRequest request) {
+    protected HashMap<String, String> getAllURLParameter(HttpServletRequest request) {
         HashMap<String, String> parameters = new HashMap<>();
-        String queryString =  request.getQueryString();
+        String queryString = request.getQueryString();
         if (queryString != null) {
             String[] division = queryString.split("&");
             for (String string : division) {
@@ -138,16 +144,16 @@ public class FrontServlet extends HttpServlet {
         }
         return parameters;
     }
-    
+
     // Prendre le nom du fonction a appeler
     protected String getFunctionUrl(String URI, String contextePath) {
         return URI.substring(contextePath.length(), URI.length());
     }
-    
+
     // Texte a afficher si on appelle fonction sans chargement modelView
     protected void affichageFonction(HttpServletResponse response) {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) { 
+        try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -157,25 +163,26 @@ public class FrontServlet extends HttpServlet {
             out.println("<p> Fonction appelée</p>");
             out.println("</body>");
             out.println("</html>");
-        }  catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     // Texte a afficher si on appelle fonction sans chargement modelView
     protected void affichageErreur(HttpServletResponse response, Exception ex) {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) { 
+        try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
             out.println("<title>Servlet FrontServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<p>" + ex.getMessage() + "</p>");
+            out.println("<p> Erreur : " + ex.getMessage() + "</p>");
+            ex.printStackTrace();
             out.println("</body>");
             out.println("</html>");
-        }  catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -188,60 +195,92 @@ public class FrontServlet extends HttpServlet {
         }
         return url;
     }
-    
+
     // Pour remplir les attributes de l'objet à partir des parametres de l'URL
     protected void loadURLAttribute(Object objet, HttpServletRequest request) throws Exception {
         HashMap<String, String> parameters = getAllURLParameter(request);
         Field[] attributs = objet.getClass().getDeclaredFields();
         Set<Map.Entry<String, String>> elements = parameters.entrySet();
-        
+
         for (Map.Entry<String, String> element : elements) {
             for (Field attr : attributs) {
                 if (element.getKey().equals(attr.getName())) {
                     FrameworkUtility.affectAttribute(objet, attr, element.getValue());
                 }
-            } 
+            }
         }
-        
+
     }
-    
+
+    // Trouver l'attributs concernée
+    public Field findFileUploadField(Field[] attributs, String parameter) {
+        for (Field attribut : attributs) {
+            if (attribut.getType() == FileUpload.class && parameter.equals(attribut.getName())) {
+                return attribut;
+            }
+        }
+        return null;
+    }
+
+    // Charge le fichier uploader dans le class FileUpload
+    protected void loadUploadedFile(Object objet, Part partFile) throws Exception {
+        Field[] attributs = objet.getClass().getDeclaredFields();
+        Field uploadField = findFileUploadField(attributs, partFile.getName());
+        if (uploadField != null) {
+            byte[] bytes = partFile.getInputStream().readAllBytes();
+            FileUpload result = new FileUpload(partFile.getSubmittedFileName(), bytes);
+            FrameworkUtility.affectFileUploadAttribute(objet, uploadField, result);
+        }
+    }
+
     // Remplisse les attributs de l'objet si des donnees provenant d'un formulaire existe
-    // Valable pour attribut de meme nom et un seule valeur non un tableau
+    // Valable pour attribut de meme nom et pour un seul valeur ou un tableau
     protected void loadObjectAttribute(Object objet, HttpServletRequest request) throws Exception {
         Map<String, String[]> parameters = request.getParameterMap();
         Field[] attributs = objet.getClass().getDeclaredFields();
-        
-        for(String parameter : parameters.keySet()) {
-            for(Field attr : attributs) {
-                if (parameter.equals(attr.getName())) {
+        for (String parameter : parameters.keySet()) {
+            for (Field attr : attributs) {
+                if (parameter.equals(attr.getName()) && parameters.get(parameter).length == 1) {
                     FrameworkUtility.affectAttribute(objet, attr, parameters.get(parameter)[0]);
+                } else if (parameter.equals(attr.getName() + "[]")) {
+                    String[] values = parameters.get(parameter);
+                    FrameworkUtility.affectArrayAttribute(objet, attr, parameters.get(parameter));
+                }
+            }
+        }
+
+        // Si un ou plusieur fichier est envoyé
+        if (request.getContentType() != null && request.getContentType().toLowerCase().contains("multipart/form-data")) {
+            for (Part part : request.getParts()) {
+                if (part != null && part.getSubmittedFileName() != null && !part.getSubmittedFileName().equals("")) {
+                    loadUploadedFile(objet, part);
                 }
             }
         }
     }
-    
+
     // Appele la fonction concerné avec l'URL
     protected Object callFunction(String url, HttpServletRequest request) throws Exception {
+
         Mapping map = getMapping(url);
         Class classInstance = Class.forName(map.getClassName());
         Object objet = classInstance.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
         loadURLAttribute(objet, request);       // Charge les attributs de classe par URL
-        loadObjectAttribute(objet, request);    // Charge les attributs de 
+        loadObjectAttribute(objet, request);    // Charge les attributs de classe par method post
         HashMap<String, String> parameters = getAllURLParameter(request);       // Les parametres en URL
         Method function = FrameworkUtility.findMethod(map.getMethod(), objet);
         Object[] parametres = FrameworkUtility.prepareFunctionParameter(function, parameters);      // Trouve les valeurs des arguments 
         Object result = function.invoke(objet, parametres);
         return result;
     }
-    
+
     public Mapping getMapping(String url) throws Exception {
-        if(url == null) {
+        if (url == null) {
             url = "";
-        }
-        else {
+        } else {
             url = url.substring(1, url.length());
         }
-        
+
         Mapping map = (Mapping) getMappingUrls().get(url);
         if (map == null) {
             throw new Exception("L'url " + url + " que vous avez entrer n'existe pas dans le projet.");

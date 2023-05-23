@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.tomcat.util.http.fileupload.UploadContext;
 
 /**
  *
@@ -23,50 +24,122 @@ import java.util.Set;
  */
 public class FrameworkUtility {
 
-    // Affecte la valeur d'un attribut à un objet
-    public static void affectAttribute(Object objet, Field attribut, String value) throws Exception {
+    // Recherche du setter 
+    public static Method findSetter(Object objet, Field attribut) throws Exception {
         String nomAttribut = attribut.getName().substring(0, 1).toUpperCase() + attribut.getName().substring(1);
         Method[] fonctions = objet.getClass().getDeclaredMethods();
         Method method = null; // methode recherché
-        
+
         // Recherche du methode ayant le nom set + Attribut
-        for(Method meth : fonctions) {
+        for (Method meth : fonctions) {
             if (meth.getName().equals("set" + nomAttribut)) {
                 method = meth;
                 break;
             }
         }
-        
+        return method;
+    }
+    
+    // Affecte un Upload File  à un objet
+    public static void affectFileUploadAttribute(Object objet, Field attribut, FileUpload value) throws Exception {
+        Method method = findSetter(objet, attribut);
+        method.invoke(objet, value);
+    }
+
+    // Affecte la valeur d'un attribut à un objet
+    public static void affectAttribute(Object objet, Field attribut, String value) throws Exception {
+        Method method = findSetter(objet, attribut);
+
         // Appel du setter et cast value
         Object parametre = null;
         Class typeEntrer = method.getParameterTypes()[0];
         parametre = FrameworkUtility.castValue(typeEntrer, value);
-        
+
         method.invoke(objet, parametre);
     }
-    
+
+    // Affecte la valeur d'un attribut tableau à un objet
+    public static void affectArrayAttribute(Object objet, Field attribut, String[] value) throws Exception {
+        Method method = findSetter(objet, attribut);
+
+        // Appel du setter et cast value
+        Object parametre = null;
+        Class typeEntrer = method.getParameterTypes()[0];
+        parametre = FrameworkUtility.castArrayValue(typeEntrer, value);
+
+        method.invoke(objet, parametre);
+    }
+
+    public static Object castArrayValue(Class typeEntrer, String[] values) throws Exception {
+        System.out.println("Caste du tableau");
+        if (typeEntrer == Integer[].class) {
+            Integer[] results = new Integer[values.length];
+            int indice = 0;
+            for (String value : values) {
+                results[indice] = Integer.valueOf(value);
+                indice++;
+            }
+            return results;
+
+        } else if (typeEntrer == int[].class) {
+            int[] results = new int[values.length];
+            int indice = 0;
+            for (String value : values) {
+                results[indice] = Integer.valueOf(value);
+                indice++;
+            }
+            return results;
+
+        } else if (typeEntrer == Double[].class) {
+            Double[] results = new Double[values.length];
+            int indice = 0;
+            for (String value : values) {
+                results[indice] = Double.valueOf(value);
+                indice++;
+            }
+            return results;
+
+        } else if (typeEntrer == double[].class) {
+            double[] results = new double[values.length];
+            int indice = 0;
+            for (String value : values) {
+                results[indice] = Double.valueOf(value);
+                indice++;
+            }
+            return results;
+
+        } else if (typeEntrer == Date[].class) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            Date[] results = new Date[values.length];
+            int indice = 0;
+            for (String value : values) {
+                results[indice] = formatter.parse(value);
+                indice++;
+            }
+            return results;
+
+        } else {
+            return values;
+        }
+    }
+
     public static Object castValue(Class typeEntrer, String value) throws Exception {
         if (typeEntrer == Integer.class) {
             return Integer.valueOf(value);
-        }
-        else if (typeEntrer == int.class) {
+        } else if (typeEntrer == int.class) {
             return Integer.valueOf(value);
-        }
-        else if (typeEntrer == Double.class) {
+        } else if (typeEntrer == Double.class) {
             return Double.valueOf(value);
-        } 
-        else if (typeEntrer == double.class) {
+        } else if (typeEntrer == double.class) {
             return Double.valueOf(value);
-        } 
-        else if (typeEntrer == Date.class || typeEntrer == Double.class) {
+        } else if (typeEntrer == Date.class) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             return formatter.parse(value);
-        }
-        else {
+        } else {
             return value;
         }
     }
-    
+
     // Trouve un method à partir de son nom
     public static Method findMethod(String nomFonction, Object objet) {
         Method[] methods = objet.getClass().getDeclaredMethods();
@@ -77,12 +150,12 @@ public class FrameworkUtility {
         }
         return null;
     }
-    
+
     public static Object[] prepareFunctionParameter(Method function, HashMap<String, String> functionParameters) throws Exception {
         Parameter[] params = function.getParameters();
         Object[] arguments = new Object[params.length];     // Tableau contenant l'arguments
         Set<Map.Entry<String, String>> elements = functionParameters.entrySet();
-        
+
         int indice = 0;
         for (Parameter param : params) {
             boolean exist = false;
@@ -93,7 +166,7 @@ public class FrameworkUtility {
                     indice++;
                 }
             }
-            
+
             if (exist == false) {
                 arguments[indice] = null;
                 indice++;
@@ -101,9 +174,7 @@ public class FrameworkUtility {
         }
         return arguments;
     }
-    
-    
-    
+
     // Prends tous les .class a l'interieur des sous package
     public static void getSubClasses(String parentPackage, File dossier, List classes) throws Exception {
         File[] inside = dossier.listFiles();
@@ -120,7 +191,7 @@ public class FrameworkUtility {
             }
         }
     }
-    
+
     // Prepare le packagename pour s'adapter si vide
     public static String formatPackageName(String packageName, String fileName) {
         if (packageName == "") {

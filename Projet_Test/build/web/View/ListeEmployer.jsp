@@ -2,7 +2,7 @@
     Document   : ListeEmployer
     Created on : 4 avr. 2023, 10:01:54
     Author     : to
---%>_
+--%>
 
 <%@page import="java.util.List"%>
 <%@page import="etu1964.model.Emp"%>
@@ -22,10 +22,11 @@
             <li><%= elem.getNom()%></li>
                 <% }%>
         </ul>
-        <form action="insertNewEmp.do" method="POST">
+        <form action="insertNewEmp.do" method="POST" enctype="multipart/form-data">
             <input type="text" name="nom" value="Koto">
             <input type="number" name="age" value="18">
             <input type="date" name="naissance" value="2004-07-07">
+            <input type="file" name="photo">
             <input type="submit" value="tester">
         </form>
     </body>
