@@ -40,6 +40,14 @@ public class FrameworkUtility {
         return method;
     }
     
+    // Reset tous les valeurs d'attributs d'un class
+    public static void resetObjectAttribute(Object objet) throws Exception {
+        Field[] attributs = objet.getClass().getDeclaredFields();
+        for (Field attribut : attributs) {
+            FrameworkUtility.affectAttribute(objet, attribut, null);
+        }
+    }
+    
     // Affecte un Upload File  à un objet
     public static void affectFileUploadAttribute(Object objet, Field attribut, FileUpload value) throws Exception {
         Method method = findSetter(objet, attribut);
@@ -123,16 +131,32 @@ public class FrameworkUtility {
         }
     }
 
+    // Caster des valeurs , si la valeur est null on retourne la valeur par défaut
     public static Object castValue(Class typeEntrer, String value) throws Exception {
         if (typeEntrer == Integer.class) {
+            if (value == null) {
+                return null;
+            }
             return Integer.valueOf(value);
         } else if (typeEntrer == int.class) {
+            if (value == null) {
+                return 0;
+            }
             return Integer.valueOf(value);
         } else if (typeEntrer == Double.class) {
+            if (value == null) {
+                return null;
+            }
             return Double.valueOf(value);
         } else if (typeEntrer == double.class) {
+            if (value == null) {
+                return 0;
+            }
             return Double.valueOf(value);
         } else if (typeEntrer == Date.class) {
+            if (value == null) {
+                return null;
+            }
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             return formatter.parse(value);
         } else {

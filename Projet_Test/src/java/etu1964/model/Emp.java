@@ -5,6 +5,7 @@
 package etu1964.model;
 
 import etu1964.framework.ModelView;
+import etu1964.framework.annotations.Singleton;
 import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FileUpload;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.List;
  *
  * @author to
  */
+
+@Singleton
 public class Emp {
 /// Attributs
 
@@ -22,7 +25,6 @@ public class Emp {
     int age;
     Date naissance;
     FileUpload photo;
-    FileUpload maison;
     
 /// Encapsulation
     public String getNom() {
@@ -56,15 +58,6 @@ public class Emp {
     public void setPhoto(FileUpload photo) {
         this.photo = photo;
     }
-
-    public FileUpload getMaison() {
-        return maison;
-    }
-
-    public void setMaison(FileUpload maison) {
-        this.maison = maison;
-    }
-
     
 /// Constructeur
     public Emp(String nom) {
@@ -75,8 +68,10 @@ public class Emp {
     }
 
 /// Fonctions du classe
-    @Url(path = "getAllEmployer.do")
+    @Url("getAllEmployer.do")
     public ModelView getAll() {
+        System.out.println("Reference de l'objet : " + this);
+
         // Les données à envoyer
         List<Emp> listes = new ArrayList<Emp>();
         listes.add(new Emp("To"));
@@ -93,17 +88,15 @@ public class Emp {
         return view;
     }
 
-    @Url(path = "insertNewEmp.do")
+    @Url("insertNewEmp.do")
     public void save(String name, Integer year, Date birth) {
+        System.out.println("Reference de l'objet : " + this);
         System.out.println("J'insert un nouveau employee ");
         System.out.println("Son nom est : " + this.nom);
         System.out.println("Son age est : " + this.age);
         System.out.println("Née en : " + this.naissance);
         if (getPhoto() != null) {
-            System.out.println("Photo : " + getPhoto().getName() + " et bytes : " + getPhoto().getBytes());
-        } 
-        if (getMaison()!= null) {
-            System.out.println("Photo : " + getMaison().getName() + " et bytes : " + getMaison().getBytes());
+            System.out.println(getPhoto().getName());
         }
     }
 }

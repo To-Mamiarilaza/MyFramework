@@ -5,6 +5,7 @@
 package etu1964.model;
 
 import etu1964.framework.ModelView;
+import etu1964.framework.annotations.Singleton;
 import etu1964.framework.annotations.Url;
 import java.util.List;
 
@@ -14,7 +15,6 @@ import java.util.List;
  */
 public class Dept {
 /// Attributs
-
     String nom;
 
 /// Encapsulation
@@ -39,18 +39,18 @@ public class Dept {
     }
 
 /// Fonctions du classe
-    @Url(path="getAllDepartement.do")
+    @Url("getAllDepartement.do")
     public List getAllDept() {
         System.out.println("Listes de tous les département");
         return null;
     }
     
-    @Url(path="welcome.do")
+    @Url("welcome.do")
     public ModelView departement() {
         return new ModelView("departement.jsp");
     }
 
-    @Url(path="insertNewDept.do")
+    @Url("insertNewDept.do")
     public void insertionDept() {
     }
     

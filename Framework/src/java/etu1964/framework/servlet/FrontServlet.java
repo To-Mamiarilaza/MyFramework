@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import etu1964.framework.annotations.Singleton;
 
 /**
  *
@@ -45,7 +46,8 @@ public class FrontServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
 /// Attributs MappingUrls
-    HashMap<String, Mapping> mappingUrls = new HashMap<>();
+    HashMap<String, Mapping> mappingUrls = new HashMap<>();     // Contenant les mappings
+    HashMap<String, Object> instanceList = new HashMap<>();     // Contenant les singletons
 
 /// Encapsulations
     public HashMap getMappingUrls() {
@@ -82,11 +84,15 @@ public class FrontServlet extends HttpServlet {
     public void scanClass(Class target) {
         Method[] methods = target.getDeclaredMethods();
         String className = target.getName();
+        // Si singleton ajouter dans le hashmap avec valeur null
+        if (target.getAnnotation(Singleton.class) != null) {
+            this.instanceList.put(className, null);
+        }
         Url url;
         for (Method method : methods) {
             url = method.getAnnotation(Url.class);
             if (url != null) {
-                addInMappingUrls(url.path(), new Mapping(className, method.getName()));
+                addInMappingUrls(url.value(), new Mapping(className, method.getName()));
             }
         }
     }
@@ -258,13 +264,40 @@ public class FrontServlet extends HttpServlet {
             }
         }
     }
+    
+    // Vérifie si une classe appartient au liste des singletons
+    protected boolean isSingleton(String className) {
+        for (Map.Entry<String, Object> entry : instanceList.entrySet()) {
+            if (entry.getKey().equals(className)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Prends l'objet contenue dans le Mapping et Joue avec les singletons
+    protected Object getConcernedObject(Mapping map) throws Exception {
+        if (isSingleton(map.getClassName())) {      // Si singleton
+            if (instanceList.get(map.getClassName()) == null) {
+                Class classInstance = Class.forName(map.getClassName());
+                Object objet = classInstance.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
+                instanceList.put(map.getClassName(), objet);
+                return objet;
+            } 
+            Object objet = instanceList.get(map.getClassName());
+            FrameworkUtility.resetObjectAttribute(objet);
+            return objet;
+        } else {
+            Class classInstance = Class.forName(map.getClassName());
+            Object objet = classInstance.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
+            return objet;
+        }
+    }
 
     // Appele la fonction concerné avec l'URL
     protected Object callFunction(String url, HttpServletRequest request) throws Exception {
-
         Mapping map = getMapping(url);
-        Class classInstance = Class.forName(map.getClassName());
-        Object objet = classInstance.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
+        Object objet = getConcernedObject(map);
         loadURLAttribute(objet, request);       // Charge les attributs de classe par URL
         loadObjectAttribute(objet, request);    // Charge les attributs de classe par method post
         HashMap<String, String> parameters = getAllURLParameter(request);       // Les parametres en URL

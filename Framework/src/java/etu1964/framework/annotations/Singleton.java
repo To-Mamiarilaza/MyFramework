@@ -1,6 +1,6 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/AnnotationType.java to edit this template
  */
 package etu1964.framework.annotations;
 
@@ -14,8 +14,7 @@ import java.lang.annotation.Target;
  * @author to
  */
 
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Url {
-    String value() default "";
+public @interface Singleton {
 }
