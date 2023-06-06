@@ -22,6 +22,7 @@ public class Emp {
     int age;
     Date naissance;
     FileUpload photo;
+    FileUpload maison;
     
 /// Encapsulation
     public String getNom() {
@@ -56,6 +57,15 @@ public class Emp {
         this.photo = photo;
     }
 
+    public FileUpload getMaison() {
+        return maison;
+    }
+
+    public void setMaison(FileUpload maison) {
+        this.maison = maison;
+    }
+
+    
 /// Constructeur
     public Emp(String nom) {
         setNom(nom);
@@ -89,7 +99,11 @@ public class Emp {
         System.out.println("Son nom est : " + this.nom);
         System.out.println("Son age est : " + this.age);
         System.out.println("Née en : " + this.naissance);
-        
-        System.out.println("Photo : " + getPhoto() + " et bytes : " + getPhoto().getBytes());
+        if (getPhoto() != null) {
+            System.out.println("Photo : " + getPhoto().getName() + " et bytes : " + getPhoto().getBytes());
+        } 
+        if (getMaison()!= null) {
+            System.out.println("Photo : " + getMaison().getName() + " et bytes : " + getMaison().getBytes());
+        }
     }
 }

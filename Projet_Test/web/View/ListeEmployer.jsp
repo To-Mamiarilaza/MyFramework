@@ -27,6 +27,7 @@
             <input type="number" name="age" value="18">
             <input type="date" name="naissance" value="2004-07-07">
             <input type="file" name="photo">
+            <input type="file" name="maison">
             <input type="submit" value="tester">
         </form>
     </body>

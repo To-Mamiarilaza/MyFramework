@@ -43,4 +43,10 @@ UTILISATION DANS UN PROJET :
 	- Il faut seulement que les clés des valeurs depuis l'URL et les paramètres
 	du fonction ont le même nom.
 	- Le paramètre d'un fonction non affécté a comme valeur NULL
+	
+6. Upload fichier :
+	- Ajouter un attribut FileUpload dans le class de destination qui veut utiliser le fichier
+	- FileUpload est un class composé des attributs name (nom du fichier) , path (destination) , bytes[] (contenue du fichier) 
+	- Ensuite nous allons affecté le fichier dans cette attribut , dans ce cas il faut que le input file doit entre au meme nom 
+	  que l'attribut FileUpload est ca ce fait automatiquement après.
 
