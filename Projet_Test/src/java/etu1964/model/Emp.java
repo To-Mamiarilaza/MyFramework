@@ -11,6 +11,7 @@ import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FileUpload;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -129,6 +130,22 @@ public class Emp {
             return new ModelView("home.jsp");
         }
     }
+    
+    @Url("testAPI.do")
+    public ModelView testAPI() {
+        ModelView view = new ModelView("station.jsp");
+        List<String> listes = new ArrayList<>();
+        listes.add("To");
+        listes.add("Niavo");
+        listes.add("Mamy");
+        listes.add("Vero");;
+        view.addItem("listes", listes);
+        view.addItem("fleuve", "Andekaleka");
+        view.isJSON(true);
+        return view;
+    }
+    
+    @JSON
     
     @Url("home.do")
     public ModelView home() {

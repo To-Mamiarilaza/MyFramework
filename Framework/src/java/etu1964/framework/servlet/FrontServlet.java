@@ -4,6 +4,7 @@
  */
 package etu1964.framework.servlet;
 
+import com.google.gson.Gson;
 import etu1964.framework.Mapping;
 import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Auth;
@@ -140,15 +141,20 @@ public class FrontServlet extends HttpServlet {
                 ModelView model = (ModelView) result;
                 prepareRequest(request, model);
                 setAllSession(request, model);
-
-                RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
-                dispat.forward(request, response);
+                if (model.isJSON()) {
+                    Gson gson = new Gson();
+                    String json = gson.toJson(model.getData());
+                    affichageMessage(response, json);
+                } else {
+                    RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
+                    dispat.forward(request, response);
+                }
             } else {
                 throw new Exception("Les fonctions doivent retourner un Model View");
             }
         } catch (Exception e) {
             System.out.println("Une erreur s'est produite !");
-            affichageErreur(response, e);
+            affichageMessage(response, e.getMessage());
         }
     }
 
@@ -197,7 +203,7 @@ public class FrontServlet extends HttpServlet {
     }
 
     // Texte a afficher si on appelle fonction sans chargement modelView
-    protected void affichageErreur(HttpServletResponse response, Exception ex) {
+    protected void affichageMessage(HttpServletResponse response, String message) {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
@@ -206,15 +212,14 @@ public class FrontServlet extends HttpServlet {
             out.println("<title>Servlet FrontServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<p> Erreur : " + ex.getMessage() + "</p>");
-            ex.printStackTrace();
+            out.println(message);
             out.println("</body>");
             out.println("</html>");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
+    
     // Pour avoir l'url entrant
     protected String getURL(HttpServletRequest request) {
         String url = request.getRequestURI();

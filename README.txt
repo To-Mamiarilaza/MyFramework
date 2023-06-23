@@ -49,4 +49,29 @@ UTILISATION DANS UN PROJET :
 	- FileUpload est un class composé des attributs name (nom du fichier) , path (destination) , bytes[] (contenue du fichier) 
 	- Ensuite nous allons affecté le fichier dans cette attribut , dans ce cas il faut que le input file doit entre au meme nom 
 	  que l'attribut FileUpload est ca ce fait automatiquement après.
-
+	  
+7. Authentification :
+	Pour filtrer les utilisateurs qui ont accés à un fonction :
+	- Ajouter en tant que init-param du web.xml le nom du session d'authentification par exemple : isConnected
+	- Ajouter aussi en init-param le nom du session du profil d'utilisateur par exemple : profile pour stocker les profiles d'utilisateurs
+	- Pour authentifié un utilisateur:
+		- Dans la classe ModelView on doit ajouter le session addSession("isConnected", true) par exemple
+		- Et pour préciser le profil de l'utilisateur : addSession("profile", "admin")
+	- Pour ajouter de l'authentification a un fonction , il faut mettre une annotation @Auth sur le fonction ou @Auth("nom du profil autorisé")
+	
+8. Gestion des sessions :
+	- Pour ajouter des sessions on doit appeler seulement addSession(cle, valeur)
+	- Pour prendre les sessions:
+		- Annoter la fonction appelée avec @Session
+		- on doit ajouter un attribut HashMap<String, Object> session dans la classe qui va l'utiliser.
+		- Ensuite getSession(cle) dans la fonction pour avoir le valeur
+		
+9. Éxposition API:
+	Pour obtenir le résultat d'une fonction en JSON:
+	1 ér méthode:
+		- appeler la fonction isJSON(true) du modèle view et après on ajoute les données à partir du addItem() et c'est fini
+		
+	2 ème méthode:
+		- Annoter la fonction avec une annotation @JSON
+		- Le type de retour du fonction est l'objet à passer par exemple List<Emp>
+	
