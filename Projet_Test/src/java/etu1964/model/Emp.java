@@ -145,6 +145,22 @@ public class Emp {
         }
     }
     
+    @Url("testAPI.do")
+    public ModelView testAPI() {
+        ModelView view = new ModelView("station.jsp");
+        List<String> listes = new ArrayList<>();
+        listes.add("To");
+        listes.add("Niavo");
+        listes.add("Mamy");
+        listes.add("Vero");;
+        view.addItem("listes", listes);
+        view.addItem("fleuve", "Andekaleka");
+        view.isJSON(true);
+        return view;
+    }
+    
+    @JSON
+    
     @Url("home.do")
     public ModelView home() {
         ModelView view = new ModelView("home.jsp");

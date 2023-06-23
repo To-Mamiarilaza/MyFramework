@@ -65,3 +65,13 @@ UTILISATION DANS UN PROJET :
 		- Annoter la fonction appelée avec @Session
 		- on doit ajouter un attribut HashMap<String, Object> session dans la classe qui va l'utiliser.
 		- Ensuite getSession(cle) dans la fonction pour avoir le valeur
+		
+9. Éxposition API:
+	Pour obtenir le résultat d'une fonction en JSON:
+	1 ér méthode:
+		- appeler la fonction isJSON(true) du modèle view et après on ajoute les données à partir du addItem() et c'est fini
+		
+	2 ème méthode:
+		- Annoter la fonction avec une annotation @JSON
+		- Le type de retour du fonction est l'objet à passer par exemple List<Emp>
+	

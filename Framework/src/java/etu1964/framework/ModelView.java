@@ -17,8 +17,8 @@ public class ModelView {
     String view;
     HashMap<String, Object> data = new HashMap<String, Object>();    
     HashMap<String, Object> session = new HashMap<String, Object>();
+    boolean isJSON;
     List<String> deletedSession = new ArrayList<>();
-
     
 /// Constructeur
     public ModelView(String view) {
@@ -30,6 +30,14 @@ public class ModelView {
         return view;
     }
 
+    public void isJSON(boolean value) {
+        this.isJSON = value;
+    }
+    
+    public boolean isJSON() {
+        return this.isJSON;
+    }
+    
     public void setView(String view) {
         this.view = view;
     }
