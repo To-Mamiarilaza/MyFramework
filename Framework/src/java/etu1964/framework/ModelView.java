@@ -13,7 +13,9 @@ import java.util.HashMap;
 public class ModelView {
 /// Attributs
     String view;
-    HashMap<String, Object> data = new HashMap<String, Object>();
+    HashMap<String, Object> data = new HashMap<String, Object>();    
+    HashMap<String, Object> session = new HashMap<String, Object>();
+
     
 /// Constructeur
     public ModelView(String view) {
@@ -32,9 +34,17 @@ public class ModelView {
     public HashMap<String, Object> getData() {
         return this.data;
     }
+
+    public HashMap<String, Object> getSession() {
+        return this.session;
+    }
     
 /// Fonctions du classe
     public void addItem(String cle, Object valeur) {
         getData().put(cle, valeur);
+    }
+    
+    public void addSession(String cle, Object valeur) {
+        getSession().put(cle, valeur);
     }
 }

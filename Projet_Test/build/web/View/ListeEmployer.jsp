@@ -23,7 +23,7 @@
                 <% }%>
         </ul>
         <form action="insertNewEmp.do" method="POST" enctype="multipart/form-data">
-            <input type="text" name="nom" value="Koto">
+            <input type="text" name="nom" value="Koto">            
             <input type="number" name="age" value="18">
             <input type="date" name="naissance" value="2004-07-07">
             <input type="file" name="photo">

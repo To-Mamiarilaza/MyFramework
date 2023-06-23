@@ -6,6 +6,7 @@ package etu1964.framework.servlet;
 
 import etu1964.framework.Mapping;
 import etu1964.framework.ModelView;
+import etu1964.framework.annotations.Auth;
 import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FileUpload;
 import etu1964.framework.util.FrameworkUtility;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +26,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import etu1964.framework.annotations.Singleton;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -48,6 +48,8 @@ public class FrontServlet extends HttpServlet {
 /// Attributs MappingUrls
     HashMap<String, Mapping> mappingUrls = new HashMap<>();     // Contenant les mappings
     HashMap<String, Object> instanceList = new HashMap<>();     // Contenant les singletons
+    String authSession;
+    String authProfile;
 
 /// Encapsulations
     public HashMap getMappingUrls() {
@@ -63,7 +65,11 @@ public class FrontServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
         try {
+            // Prise des parametres initiaux
             String rootPackage = config.getInitParameter("rootPackage");
+            this.authSession = config.getInitParameter("authSession");
+            this.authProfile = config.getInitParameter("authProfile");
+            
             loadMappingUrls(rootPackage);  // Remplisse le mappingUrls
             detailMappingUrls();
         } catch (Exception e) {
@@ -111,6 +117,17 @@ public class FrontServlet extends HttpServlet {
         Set<Map.Entry<String, Object>> elements = data.entrySet();
         for (Map.Entry<String, Object> element : elements) {
             request.setAttribute(element.getKey(), element.getValue());
+            System.out.println(element.getKey() + " : " + element.getValue());
+        }
+    }
+    
+    // Etablies tous les sessions envoyé depuis le model view
+    protected void setAllSession(HttpServletRequest request, ModelView view) {
+        HashMap<String, Object> data = view.getSession();
+        Set<Map.Entry<String, Object>> elements = data.entrySet();
+        HttpSession session = request.getSession();
+        for (Map.Entry<String, Object> element : elements) {
+            session.setAttribute(element.getKey(), element.getValue());
         }
     }
 
@@ -122,11 +139,12 @@ public class FrontServlet extends HttpServlet {
             if (result != null && result instanceof ModelView) {
                 ModelView model = (ModelView) result;
                 prepareRequest(request, model);
+                setAllSession(request, model);
 
                 RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
                 dispat.forward(request, response);
             } else {
-                affichageFonction(response);
+                throw new Exception("Les fonctions doivent retourner un Model View");
             }
         } catch (Exception e) {
             System.out.println("Une erreur s'est produite !");
@@ -135,13 +153,17 @@ public class FrontServlet extends HttpServlet {
     }
 
     // Prendre les arguments passé par l'url
-    protected HashMap<String, String> getAllURLParameter(HttpServletRequest request) {
+    protected HashMap<String, String> getAllURLParameter(HttpServletRequest request) throws Exception {
         HashMap<String, String> parameters = new HashMap<>();
         String queryString = request.getQueryString();
         if (queryString != null) {
             String[] division = queryString.split("&");
             for (String string : division) {
-                parameters.put(string.split("=")[0], string.split("=")[1]);
+                try {
+                    parameters.put(string.split("=")[0], string.split("=")[1]);
+                } catch (Exception e) {
+                    throw new Exception("Vérifie bien les donnees que vous envoyé !");
+                }
             }
             Set<Map.Entry<String, String>> elements = parameters.entrySet();
             for (Map.Entry<String, String> element : elements) {
@@ -293,6 +315,21 @@ public class FrontServlet extends HttpServlet {
             return objet;
         }
     }
+    
+    // Vérifié les authentifications
+    protected void checkAuthentification(Method function, HttpServletRequest request) throws Exception {
+        if(function.isAnnotationPresent(Auth.class)) {
+            Auth auth = function.getAnnotation(Auth.class);
+            
+            if (request.getSession().getAttribute(this.authSession) == null) {
+                throw new Exception("Il faut être authentifié pour acceder a cette fonction !");
+            }
+            
+            if (!auth.value().equals("") && (request.getSession().getAttribute(this.authProfile) == null || !request.getSession().getAttribute(this.authProfile).equals(auth.value()))) {
+                throw new Exception("Vous devez être " + auth.value() + " pour accéder a cette fonction !");
+            }
+        }
+    }
 
     // Appele la fonction concerné avec l'URL
     protected Object callFunction(String url, HttpServletRequest request) throws Exception {
@@ -302,6 +339,10 @@ public class FrontServlet extends HttpServlet {
         loadObjectAttribute(objet, request);    // Charge les attributs de classe par method post
         HashMap<String, String> parameters = getAllURLParameter(request);       // Les parametres en URL
         Method function = FrameworkUtility.findMethod(map.getMethod(), objet);
+        
+        // Verification des authentifications
+        checkAuthentification(function, request);
+        
         Object[] parametres = FrameworkUtility.prepareFunctionParameter(function, parameters);      // Trouve les valeurs des arguments 
         Object result = function.invoke(objet, parametres);
         return result;

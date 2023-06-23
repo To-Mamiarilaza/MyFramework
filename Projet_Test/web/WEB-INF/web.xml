@@ -7,6 +7,14 @@
             <param-name>rootPackage</param-name>
             <param-value>etu1964.model</param-value>
         </init-param>
+        <init-param>
+            <param-name>authSession</param-name>
+            <param-value>isConnected</param-value>
+        </init-param>
+        <init-param>
+            <param-name>authProfile</param-name>
+            <param-value>profile</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>FrontServlet</servlet-name>

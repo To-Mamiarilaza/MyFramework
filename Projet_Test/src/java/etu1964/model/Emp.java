@@ -5,6 +5,7 @@
 package etu1964.model;
 
 import etu1964.framework.ModelView;
+import etu1964.framework.annotations.Auth;
 import etu1964.framework.annotations.Singleton;
 import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FileUpload;
@@ -69,6 +70,7 @@ public class Emp {
 
 /// Fonctions du classe
     @Url("getAllEmployer.do")
+    @Auth
     public ModelView getAll() {
         System.out.println("Reference de l'objet : " + this);
 
@@ -89,7 +91,7 @@ public class Emp {
     }
 
     @Url("insertNewEmp.do")
-    public void save(String name, Integer year, Date birth) {
+    public ModelView save(String name, Integer year, Date birth) {
         System.out.println("Reference de l'objet : " + this);
         System.out.println("J'insert un nouveau employee ");
         System.out.println("Son nom est : " + this.nom);
@@ -98,5 +100,38 @@ public class Emp {
         if (getPhoto() != null) {
             System.out.println(getPhoto().getName());
         }
+        
+        return new ModelView("");
+    }
+    
+    @Url("deleteEmp.do")
+    @Auth("admin")
+    public ModelView delete() {
+        System.out.println("Employé supprimer !");
+        return new ModelView("station.jsp");
+    }
+    
+    @Url("checkLogin.do")
+    public ModelView checkLogin(String user, String mdp) {
+        if (user.equals("Admin") && mdp.equals("1234")) {
+            ModelView view = new ModelView("bienvenue.jsp");
+            view.addSession("isConnected", true);
+            view.addSession("profile", "admin");
+            view.addItem("profile", "Admin");
+            return view;
+        }
+        else if (user.equals("Client") && mdp.equals("1234")) {
+            ModelView view = new ModelView("bienvenue.jsp");
+            view.addSession("isConnected", true);
+            view.addItem("profile", "Client");
+            return view;
+        } else {
+            return new ModelView("home.jsp");
+        }
+    }
+    
+    @Url("home.do")
+    public ModelView home() {
+        return new ModelView("home.jsp");
     }
 }
