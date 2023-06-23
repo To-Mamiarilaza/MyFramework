@@ -5,7 +5,6 @@
 package etu1964.model;
 
 import etu1964.framework.ModelView;
-import etu1964.framework.annotations.Auth;
 import etu1964.framework.annotations.Session;
 import etu1964.framework.annotations.Singleton;
 import etu1964.framework.annotations.Url;
@@ -158,8 +157,6 @@ public class Emp {
         view.isJSON(true);
         return view;
     }
-    
-    @JSON
     
     @Url("home.do")
     public ModelView home() {
