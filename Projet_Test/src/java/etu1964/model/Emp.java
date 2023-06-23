@@ -5,7 +5,7 @@
 package etu1964.model;
 
 import etu1964.framework.ModelView;
-import etu1964.framework.annotations.Auth;
+import etu1964.framework.annotations.JSON;
 import etu1964.framework.annotations.Session;
 import etu1964.framework.annotations.Singleton;
 import etu1964.framework.annotations.Url;
@@ -159,13 +159,11 @@ public class Emp {
         return view;
     }
     
-    @JSON
-    
     @Url("home.do")
-    public ModelView home() {
-        ModelView view = new ModelView("home.jsp");
-        view.addSession("user", "To Mamiarilaza");
-        view.addSession("emp", new Emp("Niavo"));
-        return view;
+    public HashMap<String, Object> home() {
+        HashMap<String, Object> listes = new HashMap<>();
+        listes.put("Nom", "To MAMIARILAZA");
+        listes.put("Employe", "Développeur");
+        return listes;
     }
 }

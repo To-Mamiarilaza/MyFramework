@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import etu1964.framework.Mapping;
 import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Auth;
+import etu1964.framework.annotations.JSON;
 import etu1964.framework.annotations.Session;
 import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FileUpload;
@@ -158,6 +159,10 @@ public class FrontServlet extends HttpServlet {
                     RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
                     dispat.forward(request, response);
                 }
+            } else if(getFunction(functionUrl).isAnnotationPresent(JSON.class)) {
+                    Gson gson = new Gson();
+                    String json = gson.toJson(result);
+                    affichageMessage(response, json);
             } else {
                 throw new Exception("Les fonctions doivent retourner un Model View");
             }
@@ -379,6 +384,14 @@ public class FrontServlet extends HttpServlet {
         Object[] parametres = FrameworkUtility.prepareFunctionParameter(function, parameters);      // Trouve les valeurs des arguments 
         Object result = function.invoke(objet, parametres);
         return result;
+    }
+    
+    // Pour avoir le fonction du mapping
+    protected Method getFunction(String url) throws Exception {
+        Mapping map = getMapping(url);
+        Object objet = getConcernedObject(map);
+        Method function = FrameworkUtility.findMethod(map.getMethod(), objet);
+        return function;
     }
 
     public Mapping getMapping(String url) throws Exception {
