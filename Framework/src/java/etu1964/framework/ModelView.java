@@ -4,7 +4,9 @@
  */
 package etu1964.framework;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -15,6 +17,7 @@ public class ModelView {
     String view;
     HashMap<String, Object> data = new HashMap<String, Object>();    
     HashMap<String, Object> session = new HashMap<String, Object>();
+    List<String> deletedSession = new ArrayList<>();
 
     
 /// Constructeur
@@ -38,6 +41,14 @@ public class ModelView {
     public HashMap<String, Object> getSession() {
         return this.session;
     }
+
+    public List<String> getDeletedSession() {
+        return deletedSession;
+    }
+
+    public void setDeletedSession(List<String> deletedSession) {
+        this.deletedSession = deletedSession;
+    }
     
 /// Fonctions du classe
     public void addItem(String cle, Object valeur) {
@@ -46,5 +57,9 @@ public class ModelView {
     
     public void addSession(String cle, Object valeur) {
         getSession().put(cle, valeur);
+    }
+    
+    public void deleteSession(String cle) {
+        getDeletedSession().add(cle);
     }
 }

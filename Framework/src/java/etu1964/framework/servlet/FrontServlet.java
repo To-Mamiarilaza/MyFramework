@@ -7,6 +7,7 @@ package etu1964.framework.servlet;
 import etu1964.framework.Mapping;
 import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Auth;
+import etu1964.framework.annotations.Session;
 import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FileUpload;
 import etu1964.framework.util.FrameworkUtility;
@@ -27,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import etu1964.framework.annotations.Singleton;
+import java.util.Enumeration;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -69,7 +71,7 @@ public class FrontServlet extends HttpServlet {
             String rootPackage = config.getInitParameter("rootPackage");
             this.authSession = config.getInitParameter("authSession");
             this.authProfile = config.getInitParameter("authProfile");
-            
+
             loadMappingUrls(rootPackage);  // Remplisse le mappingUrls
             detailMappingUrls();
         } catch (Exception e) {
@@ -120,14 +122,21 @@ public class FrontServlet extends HttpServlet {
             System.out.println(element.getKey() + " : " + element.getValue());
         }
     }
-    
+
     // Etablies tous les sessions envoyé depuis le model view
-    protected void setAllSession(HttpServletRequest request, ModelView view) {
+    protected void prepareAllSession(HttpServletRequest request, ModelView view) {
         HashMap<String, Object> data = view.getSession();
         Set<Map.Entry<String, Object>> elements = data.entrySet();
         HttpSession session = request.getSession();
+        
+        // Ajout du session
         for (Map.Entry<String, Object> element : elements) {
             session.setAttribute(element.getKey(), element.getValue());
+        }
+        
+        // Suppression des session
+        for (String string : view.getDeletedSession()) {
+            session.removeAttribute(string);
         }
     }
 
@@ -139,7 +148,7 @@ public class FrontServlet extends HttpServlet {
             if (result != null && result instanceof ModelView) {
                 ModelView model = (ModelView) result;
                 prepareRequest(request, model);
-                setAllSession(request, model);
+                prepareAllSession(request, model);
 
                 RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
                 dispat.forward(request, response);
@@ -286,7 +295,7 @@ public class FrontServlet extends HttpServlet {
             }
         }
     }
-    
+
     // Vérifie si une classe appartient au liste des singletons
     protected boolean isSingleton(String className) {
         for (Map.Entry<String, Object> entry : instanceList.entrySet()) {
@@ -305,7 +314,7 @@ public class FrontServlet extends HttpServlet {
                 Object objet = classInstance.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
                 instanceList.put(map.getClassName(), objet);
                 return objet;
-            } 
+            }
             Object objet = instanceList.get(map.getClassName());
             FrameworkUtility.resetObjectAttribute(objet);
             return objet;
@@ -315,19 +324,37 @@ public class FrontServlet extends HttpServlet {
             return objet;
         }
     }
-    
+
     // Vérifié les authentifications
     protected void checkAuthentification(Method function, HttpServletRequest request) throws Exception {
-        if(function.isAnnotationPresent(Auth.class)) {
+        if (function.isAnnotationPresent(Auth.class)) {
             Auth auth = function.getAnnotation(Auth.class);
-            
+
             if (request.getSession().getAttribute(this.authSession) == null) {
                 throw new Exception("Il faut être authentifié pour acceder a cette fonction !");
             }
-            
+
             if (!auth.value().equals("") && (request.getSession().getAttribute(this.authProfile) == null || !request.getSession().getAttribute(this.authProfile).equals(auth.value()))) {
                 throw new Exception("Vous devez être " + auth.value() + " pour accéder a cette fonction !");
             }
+        }
+    }
+
+    // Vérifie les sessions
+    protected void loadSession(Object objet, Method function, HttpServletRequest request) throws Exception {
+        if (function.isAnnotationPresent(Session.class)) {
+            Field attribut = objet.getClass().getDeclaredField("session");
+            HashMap<String, Object> sessionResult = new HashMap<>();
+            
+            HttpSession session = request.getSession();
+            Enumeration<String> attributeNames = session.getAttributeNames();
+            while (attributeNames.hasMoreElements()) {
+                String attributeName = attributeNames.nextElement();
+                sessionResult.put(attributeName, session.getAttribute(attributeName));
+                System.out.println("Affectation session : " + attributeName + " et " + sessionResult.get(attributeName));
+            }
+            
+            FrameworkUtility.affectSessionAttribute(objet, attribut, sessionResult);
         }
     }
 
@@ -339,10 +366,11 @@ public class FrontServlet extends HttpServlet {
         loadObjectAttribute(objet, request);    // Charge les attributs de classe par method post
         HashMap<String, String> parameters = getAllURLParameter(request);       // Les parametres en URL
         Method function = FrameworkUtility.findMethod(map.getMethod(), objet);
-        
+
         // Verification des authentifications
         checkAuthentification(function, request);
-        
+        loadSession(objet, function, request);            // Chargement des sessions
+
         Object[] parametres = FrameworkUtility.prepareFunctionParameter(function, parameters);      // Trouve les valeurs des arguments 
         Object result = function.invoke(objet, parametres);
         return result;
