@@ -6,11 +6,13 @@ package etu1964.model;
 
 import etu1964.framework.ModelView;
 import etu1964.framework.annotations.Auth;
+import etu1964.framework.annotations.Session;
 import etu1964.framework.annotations.Singleton;
 import etu1964.framework.annotations.Url;
 import etu1964.framework.util.FileUpload;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -26,6 +28,7 @@ public class Emp {
     int age;
     Date naissance;
     FileUpload photo;
+    HashMap<String, Object> session;
     
 /// Encapsulation
     public String getNom() {
@@ -59,6 +62,18 @@ public class Emp {
     public void setPhoto(FileUpload photo) {
         this.photo = photo;
     }
+
+    public HashMap<String, Object> getSession() {
+        return session;
+    }
+    
+    public Object getSession(String cle) {
+        return getSession().get(cle);
+    }
+
+    public void setSession(HashMap<String, Object> session) {
+        this.session = session;
+    }
     
 /// Constructeur
     public Emp(String nom) {
@@ -70,7 +85,6 @@ public class Emp {
 
 /// Fonctions du classe
     @Url("getAllEmployer.do")
-    @Auth
     public ModelView getAll() {
         System.out.println("Reference de l'objet : " + this);
 
@@ -105,9 +119,10 @@ public class Emp {
     }
     
     @Url("deleteEmp.do")
-    @Auth("admin")
+    @Session
     public ModelView delete() {
-        System.out.println("Employé supprimer !");
+        System.out.println("Utilisateur : " + getSession("user"));
+        System.out.println("Employé : " + getSession("emp"));
         return new ModelView("station.jsp");
     }
     
@@ -132,6 +147,9 @@ public class Emp {
     
     @Url("home.do")
     public ModelView home() {
-        return new ModelView("home.jsp");
+        ModelView view = new ModelView("home.jsp");
+        view.addSession("user", "To Mamiarilaza");
+        view.addSession("emp", new Emp("Niavo"));
+        return view;
     }
 }

@@ -53,6 +53,12 @@ public class FrameworkUtility {
         Method method = findSetter(objet, attribut);
         method.invoke(objet, value);
     }
+    
+    // Affecte le Session aux hash map session de l'objet
+    public static void affectSessionAttribute(Object objet, Field attribut, HashMap<String, Object> value) throws Exception {
+        Method method = findSetter(objet, attribut);
+        method.invoke(objet, value);
+    }
 
     // Affecte la valeur d'un attribut à un objet
     public static void affectAttribute(Object objet, Field attribut, String value) throws Exception {
