@@ -17,6 +17,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit thi
         <div class="container mt-5">
             <h1>Listes des legumes</h1>
             <a href="new-legume.do" class="btn btn-success my-2">Ajouter nouveau legume</a>
+                <a href="deconnect.do" class="mx-3">Se deconnecter</a>
             <table class="table mt-3">
                 <thead>
                     <tr>

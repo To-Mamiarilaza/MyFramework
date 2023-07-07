@@ -5,8 +5,10 @@
 package etu1964.model;
 
 import etu1964.framework.ModelView;
+import etu1964.framework.annotations.Auth;
 import etu1964.framework.annotations.Url;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -64,13 +66,48 @@ public class Legume {
     }
 
 /// Fonction du classe
+    @Url("login.do")
+    public ModelView login() {
+        ModelView view = new ModelView("/View/login.jsp");
+        return view;
+    }
+
+    @Url("checkLogin.do")
+    public ModelView checkConnection(String username, String password) throws Exception {
+        if (username.equals("admin") && password.equals("1234")) {
+            ModelView view = new ModelView("/View/index.jsp");
+            view.addSession("isConnected", true);
+            view.addSession("profile", "admin");
+            List<Legume> legumes = Legume.findAll();
+            view.addItem("legumes", legumes);
+            return view;
+        } else if (username.equals("To") && password.equals("0000")) {
+            ModelView view = new ModelView("/View/index.jsp");
+            view.addSession("isConnected", true);
+            List<Legume> legumes = Legume.findAll();
+            view.addItem("legumes", legumes);
+            return view;
+        } else {
+            ModelView view = new ModelView("/View/login.jsp");
+            view.addItem("erreur", true);
+            return view;
+        }
+    }
+    
+    @Url("deconnect.do")
+    public ModelView deconnect() {
+        ModelView view = new ModelView("/View/login.jsp");
+        view.setInvalidateSession(true);
+        return view;
+    }
+
     // Ajouter nouveau legume
     @Url("new-legume.do")
     public ModelView newLegume() {
         ModelView view = new ModelView("/View/insertion.jsp");
         return view;
     }
-    
+
     @Url("modify-legume.do")
     public ModelView modifierLegume(String idLegume) throws Exception {
         ModelView view = new ModelView("/View/modification.jsp");
@@ -78,8 +115,9 @@ public class Legume {
         view.addItem("legume", legume);
         return view;
     }
-    
+
     @Url("modifier.do")
+    @Auth("admin")
     public ModelView modification() throws Exception {
         this.update();
         ModelView view = new ModelView("/View/index.jsp");
@@ -89,6 +127,7 @@ public class Legume {
     }
 
     @Url("insert-legume.do")
+    @Auth("admin")
     public ModelView insertionLegume() throws Exception {
         this.save();
         ModelView view = new ModelView("/View/index.jsp");
@@ -98,11 +137,12 @@ public class Legume {
     }
 
     @Url("delete-legume.do")
+    @Auth("admin")
     public ModelView supprimerLegume(String idLegume) throws Exception {
         Legume legume = new Legume();
         legume.setIdLegume(Integer.valueOf(idLegume));
         legume.delete();
-        
+
         ModelView view = new ModelView("/View/index.jsp");
         List<Legume> legumes = Legume.findAll();
         view.addItem("legumes", legumes);
@@ -111,6 +151,7 @@ public class Legume {
 
     // Page liste legumes
     @Url("liste.do")
+    @Auth
     public ModelView listeLegume() throws Exception {
         ModelView view = new ModelView("/View/index.jsp");
         List<Legume> legumes = Legume.findAll();
@@ -204,4 +245,26 @@ public class Legume {
         return null;
     }
 
+}
+
+class PGConnection {
+    public static Connection getConnection() throws Exception {     
+        // Fonction qui renvoie la connection vers la base : 
+            String database = "grocery";       // Nom de la base
+            String user = "postgres";       // User dans postgres
+            String mdp = "postgres";       // Mot de passe
+            
+            // Charge la classe de driver
+            Class.forName("org.postgresql.Driver");
+            
+            // Creation de l'objet de connection
+            Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + database, user,  mdp);
+            
+            connection.setAutoCommit(false);
+            return connection;
+    }
+    
+    public static void main(String[] args) throws Exception {
+        System.out.println(PGConnection.getConnection());
+    }
 }
