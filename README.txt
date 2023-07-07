@@ -72,6 +72,7 @@ UTILISATION DANS UN PROJET :
 		- appeler la fonction isJSON(true) du modèle view et après on ajoute les données à partir du addItem() et c'est fini
 		
 	2 ème méthode:
+		- Ajouter une annotation @JSON sur le fonction et le type de retour les objets en questions
 		- Annoter la fonction avec une annotation @JSON
 		- Le type de retour du fonction est l'objet à passer par exemple List<Emp>
 	
