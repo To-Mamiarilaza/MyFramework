@@ -130,20 +130,19 @@ public class FrontServlet extends HttpServlet {
         HashMap<String, Object> data = view.getSession();
         Set<Map.Entry<String, Object>> elements = data.entrySet();
         HttpSession session = request.getSession();
-        
+
         // Ajout du session
         for (Map.Entry<String, Object> element : elements) {
             session.setAttribute(element.getKey(), element.getValue());
         }
-        
+
         // Suppression des session
         for (String string : view.getDeletedSession()) {
             session.removeAttribute(string);
         }
-        
+
         // Session destroy
         if (view.isInvalidateSession()) {
-            System.out.println("Invalidation du session");
             session.invalidate();
         }
     }
@@ -152,6 +151,8 @@ public class FrontServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String functionUrl = getFunctionUrl(request.getRequestURI(), request.getContextPath());
+            System.out.println("Bonjour");
+
             Object result = callFunction(functionUrl, request);
             if (result != null && result instanceof ModelView) {
                 ModelView model = (ModelView) result;
@@ -162,18 +163,19 @@ public class FrontServlet extends HttpServlet {
                     String json = gson.toJson(model.getData());
                     affichageMessage(response, json);
                 } else {
-                    RequestDispatcher dispat = request.getRequestDispatcher("/View/" + model.getView());
+                    RequestDispatcher dispat = request.getRequestDispatcher(model.getView());
                     dispat.forward(request, response);
                 }
-            } else if(getFunction(functionUrl).isAnnotationPresent(JSON.class)) {
-                    Gson gson = new Gson();
-                    String json = gson.toJson(result);
-                    affichageMessage(response, json);
+            } else if (getFunction(functionUrl).isAnnotationPresent(JSON.class)) {
+                Gson gson = new Gson();
+                String json = gson.toJson(result);
+                affichageMessage(response, json);
             } else {
                 throw new Exception("Les fonctions doivent retourner un Model View");
             }
         } catch (Exception e) {
             System.out.println("Une erreur s'est produite !");
+            e.printStackTrace();
             affichageMessage(response, e.getMessage());
         }
     }
@@ -239,7 +241,7 @@ public class FrontServlet extends HttpServlet {
             e.printStackTrace();
         }
     }
-    
+
     // Pour avoir l'url entrant
     protected String getURL(HttpServletRequest request) {
         String url = request.getRequestURI();
@@ -361,7 +363,7 @@ public class FrontServlet extends HttpServlet {
         if (function.isAnnotationPresent(Session.class)) {
             Field attribut = objet.getClass().getDeclaredField("session");
             HashMap<String, Object> sessionResult = new HashMap<>();
-            
+
             HttpSession session = request.getSession();
             Enumeration<String> attributeNames = session.getAttributeNames();
             while (attributeNames.hasMoreElements()) {
@@ -369,7 +371,7 @@ public class FrontServlet extends HttpServlet {
                 sessionResult.put(attributeName, session.getAttribute(attributeName));
                 System.out.println("Affectation session : " + attributeName + " et " + sessionResult.get(attributeName));
             }
-            
+
             FrameworkUtility.affectSessionAttribute(objet, attribut, sessionResult);
         }
     }
@@ -391,7 +393,7 @@ public class FrontServlet extends HttpServlet {
         Object result = function.invoke(objet, parametres);
         return result;
     }
-    
+
     // Pour avoir le fonction du mapping
     protected Method getFunction(String url) throws Exception {
         Mapping map = getMapping(url);
