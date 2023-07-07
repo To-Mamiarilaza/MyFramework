@@ -4,6 +4,7 @@
     Author     : to
 --%>
 
+<%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -13,5 +14,13 @@
     </head>
     <body>
         <h1>Station</h1>
+        <% List<String> listes = (List<String>) request.getAttribute("sessions");%>
+
+        <ul>
+            <% for (String element : listes) { %>
+                <li><%= element %></li>
+            <% }%>
+        </ul>
+
     </body>
 </html>

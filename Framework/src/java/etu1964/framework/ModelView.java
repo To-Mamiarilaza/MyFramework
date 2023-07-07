@@ -19,6 +19,7 @@ public class ModelView {
     HashMap<String, Object> session = new HashMap<String, Object>();
     boolean isJSON;
     List<String> deletedSession = new ArrayList<>();
+    boolean invalidateSession = false;
     
 /// Constructeur
     public ModelView(String view) {
@@ -57,6 +58,14 @@ public class ModelView {
     public void setDeletedSession(List<String> deletedSession) {
         this.deletedSession = deletedSession;
     }
+
+    public boolean isInvalidateSession() {
+        return invalidateSession;
+    }
+
+    public void setInvalidateSession(boolean invalidateSession) {
+        this.invalidateSession = invalidateSession;
+    }
     
 /// Fonctions du classe
     public void addItem(String cle, Object valeur) {
@@ -70,4 +79,6 @@ public class ModelView {
     public void deleteSession(String cle) {
         getDeletedSession().add(cle);
     }
+    
+    
 }

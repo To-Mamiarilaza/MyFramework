@@ -5,6 +5,7 @@
 package etu1964.model;
 
 import etu1964.framework.ModelView;
+import etu1964.framework.annotations.Auth;
 import etu1964.framework.annotations.JSON;
 import etu1964.framework.annotations.Session;
 import etu1964.framework.annotations.Singleton;
@@ -120,10 +121,32 @@ public class Emp {
     
     @Url("deleteEmp.do")
     @Session
+    @Auth("admin")
     public ModelView delete() {
         System.out.println("Utilisateur : " + getSession("user"));
         System.out.println("Employé : " + getSession("emp"));
         return new ModelView("station.jsp");
+    }
+    
+    @Url("checkSession.do")
+    @Session
+    public ModelView checkAllSession() {
+        List<String> value = new ArrayList<>();
+        value.add((String) getSession().get("test"));
+        value.add((String) getSession().get("test2"));
+        
+        ModelView view = new ModelView("station.jsp");
+        view.addItem("sessions", value);
+        
+        return view;
+    }
+    
+    @Url("setAllSession.do")
+    public ModelView setAllSession() {
+        ModelView view = new ModelView("station.jsp");
+        view.addSession("test", "Session 1");
+        view.addSession("test2", "Session 2");
+        return view;
     }
     
     @Url("checkLogin.do")
@@ -145,6 +168,13 @@ public class Emp {
         }
     }
     
+    @Url("invalidate.do")
+    public ModelView destroy() {
+        ModelView view = new ModelView("home.jsp");
+        view.setInvalidateSession(true);
+        return view;
+    }
+    
     @Url("testAPI.do")
     public ModelView testAPI() {
         ModelView view = new ModelView("station.jsp");
@@ -160,6 +190,7 @@ public class Emp {
     }
     
     @Url("home.do")
+    @JSON
     public HashMap<String, Object> home() {
         HashMap<String, Object> listes = new HashMap<>();
         listes.put("Nom", "To MAMIARILAZA");

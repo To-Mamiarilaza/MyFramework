@@ -140,6 +140,12 @@ public class FrontServlet extends HttpServlet {
         for (String string : view.getDeletedSession()) {
             session.removeAttribute(string);
         }
+        
+        // Session destroy
+        if (view.isInvalidateSession()) {
+            System.out.println("Invalidation du session");
+            session.invalidate();
+        }
     }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
